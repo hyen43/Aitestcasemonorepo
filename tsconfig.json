@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // 최신 문법 지원
+    "module": "ESNext", // ES 모듈 방식으로 설정
+    "lib": ["DOM", "ESNext"], // DOM + 최신 JS API 포함
+    "jsx": "react-jsx", // React 17+ JSX transform 사용
+    "strict": true, // 타입 검사 엄격하게
+    "moduleResolution": "Node", // Node.js 모듈 탐색 방식
+    "esModuleInterop": true, // commonjs → esm interop
+    "forceConsistentCasingInFileNames": true, // 대소문자 구분
+    "skipLibCheck": true, // 타입 검사 빠르게 (옵션)
+    "typeRoots": ["./node_modules/@types", "./node_modules/@figma"],
+    "outDir": "dist", // 출력 경로 (ts-loader 사용 시 무시됨)
+    "resolveJsonModule": true, // json import 허용
+    "allowSyntheticDefaultImports": true // 기본 import 허용
+  },
+  "include": ["src/**/*", "webpack.config.js"],
+  "exclude": ["node_modules"]
+}
