@@ -12,9 +12,12 @@ figma.ui.onmessage = (msg) => {
     }
 
     const node = selection[0];
+    console.log("selection", selection);
 
-    if ("desciprtion" in node) {
-      const description = node.desciprtion || "";
+    console.log("node", node);
+
+    if ("characters" in node) {
+      const description = node.characters || "";
       figma.ui.postMessage({
         type: "description",
         data: description,
