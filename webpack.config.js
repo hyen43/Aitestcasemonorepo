@@ -3,6 +3,16 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const path = require("path");
 const webpack = require("webpack");
+const dotenv = require("dotenv");
+
+// .env 파일 로드
+const env = dotenv.config().parsed || {};
+
+// Webpack DefinePlugin에서 사용할 수 있도록 stringify 변환
+const envKeys = Object.keys(env).reduce((prev, next) => {
+  prev[`process.env.${next}`] = JSON.stringify(env[next]);
+  return prev;
+}, {});
 
 module.exports = (env, argv) => ({
   mode: argv.mode === "production" ? "production" : "development",
@@ -56,6 +66,7 @@ module.exports = (env, argv) => ({
   plugins: [
     new webpack.DefinePlugin({
       global: {}, // Fix missing symbol error when running in developer VM
+      ...envKeys,
     }),
     new HtmlWebpackPlugin({
       inject: "body",

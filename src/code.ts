@@ -1,4 +1,4 @@
-figma.showUI(__html__, { themeColors: true, width: 300, height: 300 });
+figma.showUI(__html__, { themeColors: true, width: 500, height: 500 });
 
 figma.ui.onmessage = (msg) => {
   if (msg.type === "get-description") {
