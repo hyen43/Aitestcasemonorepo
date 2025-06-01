@@ -12,9 +12,6 @@ figma.ui.onmessage = (msg) => {
     }
 
     const node = selection[0];
-    console.log("selection", selection);
-
-    console.log("node", node);
 
     if ("characters" in node) {
       const description = node.characters || "";
@@ -29,6 +26,4 @@ figma.ui.onmessage = (msg) => {
       });
     }
   }
-
-  // figma.closePlugin();
 };
