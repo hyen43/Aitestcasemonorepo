@@ -35,19 +35,33 @@ const callOpenAI = async (description: string): Promise<string> => {
   return data.choices?.[0]?.message?.content || "응답 없음";
 };
 
+// APP이 동작하는 코드
 const App = () => {
   // firebase validation
   const [licenseKey, setLicenseKey] = useState("");
-  const [isVerified, setIsVerified] = useStatte(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [checking, setChecking] = useState(true);
+
   //Figma 내 description 데이터 가져오기
   const [description, setDescription] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // code.ts에 저장 요청
+  const saveLicense = (key: string) => {
+    parent.postMessage(
+      { pluginMessage: { type: "save-license", licenseKey: key } },
+      "*"
+    );
+  };
+
+  // 인증 후 처리
   const handleVerify = async () => {
-    const result = await validateLicenseKey(licenseKey.trim());
+    const trimedLicensekey = licenseKey.trim();
+    const result = await validateLicenseKey(trimedLicensekey);
     if (result) {
+      saveLicense(trimedLicensekey);
       setIsVerified(true);
       setError("");
     } else {
@@ -80,6 +94,29 @@ const App = () => {
     }
   };
 
+  // description을 받아오는 mount 함수
+  useEffect(() => {
+    parent.postMessage({ pluginMessage: { type: "load-license" } }, "*");
+
+    const handler = async (event: MessageEvent) => {
+      const msg = event.data.pluginMessage;
+      if (msg.type === "license-loaded") {
+        const stored = msg.licenseKey;
+        if (stored) {
+          const valid = await validateLicenseKey(stored);
+          if (valid) {
+            setIsVerified(true);
+          }
+        }
+        setChecking(false);
+      }
+    };
+
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // description을 받아오는 mount 함수
   useEffect(() => {
     window.onmessage = (event) => {
       const { type, data, error } = event.data.pluginMessage;
@@ -95,8 +132,22 @@ const App = () => {
     };
   }, []);
 
-  if (isVerified) {
-    return <div>여기에 인증 UI 개발</div>;
+  // 실제 UI 로직
+  if (checking) return <p>🔍 인증 상태 확인 중...</p>;
+
+  if (!isVerified) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h3>라이선스 키를 입력하세요</h3>
+        <input
+          value={licenseKey}
+          onChange={(e) => setLicenseKey(e.target.value)}
+          placeholder="라이선스 키"
+        />
+        <button onClick={handleVerify}>검증</button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </div>
+    );
   } else {
     return (
       <div style={{ padding: 20 }}>

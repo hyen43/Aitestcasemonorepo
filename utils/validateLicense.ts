@@ -4,10 +4,13 @@ import { db, doc, getDoc } from "../src/firebase";
 export const validateLicenseKey = async (
   licenseKey: string
 ): Promise<boolean> => {
+  console.log("licenseKey", licenseKey);
   try {
     const docRef = doc(db, "licenses", licenseKey);
+    console.log("docRef", docRef);
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() && docSnap.data()?.isActive;
+    console.log("Firestore에서 가져온 snapshot:", docSnap.data());
+    return docSnap.exists() && docSnap.data()?.valid === true;
   } catch (error) {
     console.error("License validation failed", error);
     return false;

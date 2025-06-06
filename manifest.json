@@ -9,6 +9,9 @@
   "editorType": ["figma", "figjam"],
   "ui": "dist/ui.html",
   "networkAccess": {
-    "allowedDomains": ["https://api.openai.com"]
+    "allowedDomains": [
+      "https://api.openai.com",
+      "https://firestore.googleapis.com"
+    ]
   }
 }
