@@ -15,6 +15,10 @@ figma.ui.onmessage = async (msg) => {
       licenseKey: key,
     });
   }
+  // 라이센스 키 clear
+  if (msg.type === "clear-licnese") {
+    await figma.clientStorage.setAsync("licenseKey", null);
+  }
 
   // 선택한 node 속에 description 추출하는 코드
   if (msg.type === "get-description") {

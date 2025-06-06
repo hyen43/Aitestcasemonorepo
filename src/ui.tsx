@@ -69,6 +69,14 @@ const App = () => {
     }
   };
 
+  // 인증 키 로그아웃
+  const handleLogout = () => {
+    parent.postMessage({ pluginMessage: "clear-license" }, "*");
+    setIsVerified(false);
+    setLicenseKey("");
+  };
+
+  //description을 가져오는 함수
   const handleGetDescription = () => {
     parent.postMessage({ pluginMessage: { type: "get-description" } }, "*");
   };
@@ -154,9 +162,14 @@ const App = () => {
         <h3>Description 추출 테스트</h3>
         <button onClick={handleGetDescription}>디스크립션 가져오기</button>
         {description && (
-          <button onClick={handleGenerateQR} disabled={loading}>
-            2. QA 생성 {loading && "⏳"}
-          </button>
+          <>
+            <button onClick={handleGenerateQR} disabled={loading}>
+              QA 생성 {loading && "⏳"}
+            </button>
+            <button onClick={handleLogout} disabled={!isVerified}>
+              로그아웃
+            </button>
+          </>
         )}
         {error && <p style={{ color: "red" }}>{error}</p>}
         {description && (
