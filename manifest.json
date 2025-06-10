@@ -11,7 +11,10 @@
   "networkAccess": {
     "allowedDomains": [
       "https://api.openai.com",
-      "https://firestore.googleapis.com"
+      "https://firestore.googleapis.com",
+      "https://cdn.portone.io",
+      "https://checkout-service.prod.iamport.co",
+      "https://payment-gateway-sandbox.tosspayments.com"
     ]
   }
 }

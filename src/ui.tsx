@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import "./ui.css";
 import { validateLicenseKey } from "../utils/validateLicense";
 import PortOne from "@portone/browser-sdk/v2";
-import { Currency } from "@portone/browser-sdk/v2/types";
 
 // openAI call api
 const callOpenAI = async (description: string): Promise<string> => {
@@ -51,7 +50,10 @@ const App = () => {
   const [error, setError] = useState("");
 
   //결제 테스트 연동을 위한 state
-  const [paymentStatus, setPaymentStatus] = useState({ status: "IDLE" });
+  const [paymentStatus, setPaymentStatus] = useState({
+    status: "IDLE",
+    message: "",
+  });
 
   // code.ts에 저장 요청
   const saveLicense = (key: string) => {
@@ -153,42 +155,116 @@ const App = () => {
       .join("");
   }
 
-  const handlePaySubmit = async (e) => {
+  const handlePaySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPaymentStatus({ status: "PENDING" });
+    setPaymentStatus({ status: "PENDING", message: "pending" });
     const paymentId = randomId();
     const payment = await PortOne.requestPayment({
-      storeId: process.env.STORE_ID,
+      storeId: "store-8f679c08-cd81-46d8-99ad-b57014608bb2",
       channelKey: process.env.CHANNEL_KEY,
       paymentId,
       orderName: "AIAUTOTESTCASE",
       totalAmount: 30000,
-      Currency: "KRW",
+      currency: "CURRENCY_KRW",
       payMethod: "CARD",
     });
+
+    if (payment?.code !== undefined) {
+      setPaymentStatus({
+        status: "FAILED",
+        message: payment.message || "결제 실패",
+      });
+      return;
+    }
+
+    const completeResponse = await fetch("/api/payment/complete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ paymentId: payment?.paymentId }),
+    });
+
+    if (completeResponse.ok) {
+      const paymentComplete = await completeResponse.json();
+      setPaymentStatus({
+        status: paymentComplete.status,
+        message: "결제성공",
+      });
+    } else {
+      setPaymentStatus({
+        status: "FAILED",
+        message: await completeResponse.text(),
+      });
+    }
   };
+
+  const isWaitingPayment = paymentStatus.status !== "IDLE";
+
+  const handleClose = () =>
+    setPaymentStatus({
+      status: "IDLE",
+      message: "close",
+    });
 
   // 실제 UI 로직
   if (checking) return <p>🔍 인증 상태 확인 중...</p>;
 
   if (!isVerified) {
     return (
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: 20 }}>
-          <h3>라이선스 키를 입력하세요</h3>
-          <span>AI테스트케이스 사용을 위해서는 라이선스 키가 필요합니다.</span>
-          <input
-            value={licenseKey}
-            onChange={(e) => setLicenseKey(e.target.value)}
-            placeholder="라이선스 키"
-          />
-          <button onClick={handleVerify}>검증</button>
-          {error && <p style={{ color: "red" }}>{error}</p>}
+      <>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: 20 }}>
+            <h3>라이선스 키를 입력하세요</h3>
+            <span>
+              AI테스트케이스 사용을 위해서는 라이선스 키가 필요합니다.
+            </span>
+            <input
+              value={licenseKey}
+              onChange={(e) => setLicenseKey(e.target.value)}
+              placeholder="라이선스 키"
+            />
+            <button onClick={handleVerify}>검증</button>
+            {error && <p style={{ color: "red" }}>{error}</p>}
+          </div>
+          <div>
+            <form onSubmit={handlePaySubmit}>
+              <button
+                type="submit"
+                aria-busy={isWaitingPayment}
+                disabled={isWaitingPayment}
+              >
+                결제하기(라이선스키 얻기)
+              </button>
+            </form>
+          </div>
         </div>
-        <div>
-          <button>결제하기(라이선스키 얻기)</button>
-        </div>
-      </div>
+        {paymentStatus.status === "FAILED" && (
+          <dialog open>
+            <header>
+              <h1>결제 실패</h1>
+            </header>
+
+            <p>{paymentStatus.message}</p>
+
+            <button type="button" onClick={handleClose}>
+              닫기
+            </button>
+          </dialog>
+        )}
+
+        <dialog open={paymentStatus.status === "PAID"}>
+          <header>
+            <h1>결제 성공</h1>
+          </header>
+
+          <p>결제에 성공했습니다.</p>
+
+          <button type="button" onClick={handleClose}>
+            닫기
+          </button>
+        </dialog>
+      </>
     );
   } else {
     return (
