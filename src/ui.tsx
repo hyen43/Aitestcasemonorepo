@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./ui.css";
 import { validateLicenseKey } from "../utils/validateLicense";
+import PortOne from "@portone/browser-sdk/v2";
+import { Currency } from "@portone/browser-sdk/v2/types";
 
 // openAI call api
 const callOpenAI = async (description: string): Promise<string> => {
@@ -47,6 +49,9 @@ const App = () => {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  //결제 테스트 연동을 위한 state
+  const [paymentStatus, setPaymentStatus] = useState({ status: "IDLE" });
 
   // code.ts에 저장 요청
   const saveLicense = (key: string) => {
@@ -102,7 +107,7 @@ const App = () => {
     }
   };
 
-  // description을 받아오는 mount 함수
+  // 피그마 자동로그인을 위해 저장된 license 키를 받아오는 mount함수
   useEffect(() => {
     parent.postMessage({ pluginMessage: { type: "load-license" } }, "*");
 
@@ -140,20 +145,49 @@ const App = () => {
     };
   }, []);
 
+  // 결제 테스트 연동 로직
+  // 결제용 랜덤 아이디 생성 함수
+  function randomId() {
+    return [...crypto.getRandomValues(new Uint32Array(2))]
+      .map((word) => word.toString(16).padStart(8, "0"))
+      .join("");
+  }
+
+  const handlePaySubmit = async (e) => {
+    e.preventDefault();
+    setPaymentStatus({ status: "PENDING" });
+    const paymentId = randomId();
+    const payment = await PortOne.requestPayment({
+      storeId: process.env.STORE_ID,
+      channelKey: process.env.CHANNEL_KEY,
+      paymentId,
+      orderName: "AIAUTOTESTCASE",
+      totalAmount: 30000,
+      Currency: "KRW",
+      payMethod: "CARD",
+    });
+  };
+
   // 실제 UI 로직
   if (checking) return <p>🔍 인증 상태 확인 중...</p>;
 
   if (!isVerified) {
     return (
-      <div style={{ padding: 20 }}>
-        <h3>라이선스 키를 입력하세요</h3>
-        <input
-          value={licenseKey}
-          onChange={(e) => setLicenseKey(e.target.value)}
-          placeholder="라이선스 키"
-        />
-        <button onClick={handleVerify}>검증</button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: 20 }}>
+          <h3>라이선스 키를 입력하세요</h3>
+          <span>AI테스트케이스 사용을 위해서는 라이선스 키가 필요합니다.</span>
+          <input
+            value={licenseKey}
+            onChange={(e) => setLicenseKey(e.target.value)}
+            placeholder="라이선스 키"
+          />
+          <button onClick={handleVerify}>검증</button>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+        </div>
+        <div>
+          <button>결제하기(라이선스키 얻기)</button>
+        </div>
       </div>
     );
   } else {
@@ -161,15 +195,13 @@ const App = () => {
       <div style={{ padding: 20 }}>
         <h3>Description 추출 테스트</h3>
         <button onClick={handleGetDescription}>디스크립션 가져오기</button>
+        <button onClick={handleLogout} disabled={!isVerified}>
+          로그아웃
+        </button>
         {description && (
-          <>
-            <button onClick={handleGenerateQR} disabled={loading}>
-              QA 생성 {loading && "⏳"}
-            </button>
-            <button onClick={handleLogout} disabled={!isVerified}>
-              로그아웃
-            </button>
-          </>
+          <button onClick={handleGenerateQR} disabled={loading}>
+            QA 생성 {loading && "⏳"}
+          </button>
         )}
         {error && <p style={{ color: "red" }}>{error}</p>}
         {description && (
