@@ -160,7 +160,7 @@ const App = () => {
     setPaymentStatus({ status: "PENDING", message: "pending" });
     const paymentId = randomId();
     const payment = await PortOne.requestPayment({
-      storeId: "store-8f679c08-cd81-46d8-99ad-b57014608bb2",
+      storeId: process.env.STORE_ID,
       channelKey: process.env.CHANNEL_KEY,
       paymentId,
       orderName: "AIAUTOTESTCASE",
@@ -177,6 +177,7 @@ const App = () => {
       return;
     }
 
+    //⭐️이제부터 결제를 위한 백엔드 api 구축 시작(여기부터 gogo)
     const completeResponse = await fetch("/api/payment/complete", {
       method: "POST",
       headers: {
@@ -185,8 +186,11 @@ const App = () => {
       body: JSON.stringify({ paymentId: payment?.paymentId }),
     });
 
+    console.log("completeResponse", completeResponse);
+
     if (completeResponse.ok) {
       const paymentComplete = await completeResponse.json();
+      console.log("paymentComplete", paymentComplete);
       setPaymentStatus({
         status: paymentComplete.status,
         message: "결제성공",
