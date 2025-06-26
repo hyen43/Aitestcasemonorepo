@@ -67,6 +67,7 @@ const App = () => {
   // 인증 후 처리
   const handleVerify = async () => {
     const trimedLicensekey = licenseKey.trim();
+    console.log("trimedLicenseKey", trimedLicensekey);
     const result = await validateLicenseKey(trimedLicensekey);
     if (result) {
       saveLicense(trimedLicensekey);
@@ -189,6 +190,8 @@ const App = () => {
         body: JSON.stringify({ paymentId: payment?.paymentId }),
       }
     );
+
+    console.log("프론트완료반응", completeResponse);
 
     if (completeResponse.ok) {
       const paymentComplete = await completeResponse.json();
