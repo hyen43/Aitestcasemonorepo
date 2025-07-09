@@ -9,7 +9,7 @@ const dotenv = require("dotenv");
 const env = dotenv.config().parsed || {};
 
 // Webpack DefinePlugin에서 사용할 수 있도록 stringify 변환
-const envKeys = Object.entries(env).reduce((prev, next) => {
+const envKeys = Object.keys(env).reduce((prev, next) => {
   prev[`process.env.${next}`] = JSON.stringify(env[next]);
   return prev;
 }, {});

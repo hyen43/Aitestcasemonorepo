@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
+  apiKey: "AIzaSyDH4oEe6t0mKvk3CcqKaVvplhfWw2b2tjk",
   authDomain: "aiautotestcase.firebaseapp.com",
   projectId: "aiautotestcase",
   storageBucket: "aiautotestcase.firebasestorage.app",

@@ -6,7 +6,7 @@ import PortOne from "@portone/browser-sdk/v2";
 
 // openAI call api
 const callOpenAI = async (description: string): Promise<string> => {
-  const apiKey = process.env.OPENAI_API_KEY; // 이제 정상 작동!
+  const apiKey = process.env.OPENAI_API_KEY;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -90,7 +90,7 @@ const App = () => {
     parent.postMessage({ pluginMessage: { type: "get-description" } }, "*");
   };
 
-  const handleGenerateQR = async () => {
+  const handleGenerateQA = async () => {
     if (!description) {
       setError("설명을 입력해주세요.");
       return;
@@ -198,7 +198,10 @@ const App = () => {
       console.log("paymentComplete", paymentComplete);
       setPaymentStatus({
         status: paymentComplete.status,
-        message: "결제성공",
+        message:
+          paymentComplete.status === "PAID"
+            ? "결제성공"
+            : paymentComplete?.message || "결제실패",
       });
       setPaymentLicenseKey(paymentComplete.licenseKey);
     } else {
@@ -296,7 +299,7 @@ const App = () => {
           로그아웃
         </button>
         {description && (
-          <button onClick={handleGenerateQR} disabled={loading}>
+          <button onClick={handleGenerateQA} disabled={loading}>
             QA 생성 {loading && "⏳"}
           </button>
         )}
