@@ -1,39 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./ui.css";
+import { db } from "./firebase";
+import { doc, getDoc, runTransaction } from "firebase/firestore";
 import { validateLicenseKey } from "../utils/validateLicense";
 import PortOne from "@portone/browser-sdk/v2";
+import OpenAI from "openai";
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
 
 // openAI call api
 const callOpenAI = async (description: string): Promise<string> => {
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `당신은 숙련된 QA 엔지니어입니다. 다음 설명에 대한 테스트케이스를 작성하세요. 출력 형식:
+  const response = await client.responses.create({
+    model: "gpt-4o-mini",
+    input: [
+      {
+        role: "system",
+        content: `당신은 숙련된 QA 엔지니어입니다. 다음 설명에 대한 테스트케이스를 작성하세요. 출력 형식:
 - HTML 태그(h1, h2 등)나 CSS 스타일을 일절 사용하지 마세요.
 - 각 테스트 케이스는 "설명:"과 "예상 결과:"만 포함해서 텍스트로 나열해주세요.
 - 번호나 제목 없이, 순서대로 한 줄에 하나씩 작성해주세요.`,
-        },
-        {
-          role: "user",
-          content: `설명: ${description}`,
-        },
-      ],
-    }),
+      },
+      {
+        role: "user",
+        content: `설명: ${description}`,
+      },
+    ],
   });
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "응답 없음";
+  console.log(response.output_text);
+  return response.output_text || "응답없음";
 };
 
 // APP이 동작하는 코드
@@ -101,7 +99,32 @@ const App = () => {
 
     try {
       console.log("description", description);
+      console.log("licenseKey", licenseKey);
+      // 1) 남은 크레딧 조회
+      const licenseRef = doc(db, "licenses", licenseKey);
+      const licenseSnap = await getDoc(licenseRef);
+      if (!licenseSnap.exists()) {
+        setError("라이선스 정보를 찾을 수 없습니다.");
+        return;
+      }
+      const { remainingCredits } = licenseSnap.data();
+      console.log("remainingCredits", remainingCredits);
+      if (remainingCredits <= 0) {
+        setError("크레딧이 부족합니다. 충전해주세요.");
+        return;
+      }
+
       const result = await callOpenAI(description);
+      // 3) 트랜잭션으로 크레딧 1회 차감
+      await runTransaction(db, async (tx) => {
+        const docSnap = await tx.get(licenseRef);
+        if (!docSnap.exists()) throw new Error("라이선스 문서 없음");
+        const current = docSnap.data().remainingCredits;
+        if (current <= 0) throw new Error("크레딧 부족");
+        tx.update(licenseRef, { remainingCredits: current - 1 });
+      });
+
+      //파이어베이스 토큰 차감 함수
       setResult(result);
     } catch (error) {
       console.log("error", error);
@@ -121,6 +144,7 @@ const App = () => {
         const stored = msg.licenseKey;
         if (stored) {
           const valid = await validateLicenseKey(stored);
+          setLicenseKey(stored);
           if (valid) {
             setIsVerified(true);
           }
