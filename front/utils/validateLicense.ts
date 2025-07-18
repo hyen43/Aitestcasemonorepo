@@ -1,9 +1,7 @@
 import { db, doc, getDoc } from "../src/firebase";
 
 //Firestore의 licenses 컬렉션에서 문서 data가 email 인 항목을 찾아 valid 필드가 true인지 확인
-export const validateLicenseKey = async (
-  email: string
-): Promise<boolean> => {
+export const validateLicenseKey = async (email: string): Promise<boolean> => {
   console.log("licenseKey", email);
   try {
     const docRef = doc(db, "licenses", email);

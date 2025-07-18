@@ -7,7 +7,7 @@ import { validateLicenseKey } from "../utils/validateLicense";
 import PortOne from "@portone/browser-sdk/v2";
 import OpenAI from "openai";
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 
@@ -140,8 +140,10 @@ const App = () => {
 
     const handler = async (event: MessageEvent) => {
       const msg = event.data.pluginMessage;
+      console.log("플러그인 메시지", msg);
       if (msg.type === "license-loaded") {
         const stored = msg.licenseKey;
+        console.log("저장된 라이센스", stored);
         if (stored) {
           const valid = await validateLicenseKey(stored);
           setLicenseKey(stored);
@@ -186,7 +188,7 @@ const App = () => {
     setPaymentStatus({ status: "PENDING", message: "pending" });
     const paymentId = randomId();
     const payment = await PortOne.requestPayment({
-      storeId: "store-8f679c08-cd81-46d8-99ad-b57014608bb2",
+      storeId: process.env.STORE_ID ?? "",
       channelKey: process.env.CHANNEL_KEY,
       paymentId,
       orderName: "AIAUTOTESTCASE",
@@ -235,10 +237,6 @@ const App = () => {
       });
     }
   };
-
-  useEffect(() => {
-    console.log("결제완료상태 확인", paymentStatus);
-  }, [paymentStatus.status]);
 
   const isWaitingPayment = paymentStatus.status !== "IDLE";
 
