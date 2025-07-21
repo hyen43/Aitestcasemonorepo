@@ -70,9 +70,9 @@ export default function Dashboard() {
             10,000원 추가 결제하기
           </button>
 
-          <button className="text-gray-400 underline text-sm hover:text-white transition-colors duration-200">
+          {/* <button className="text-gray-400 underline text-sm hover:text-white transition-colors duration-200">
             결제 취소 / 환불 문의하기
-          </button>
+          </button> */}
           <button
             className="text-blue-600 hover:underline"
             onClick={handleLogout}

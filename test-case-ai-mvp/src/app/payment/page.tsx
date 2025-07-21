@@ -31,8 +31,8 @@ export default function Payment() {
     const paymentId = randomId();
     // env 변수로 수정 예정
     const payment = await PortOne.requestPayment({
-      storeId: "store-8f679c08-cd81-46d8-99ad-b57014608bb2",
-      channelKey: "channel-key-ce669abd-2260-49d5-8d2a-f612c199fd8b",
+      storeId: process.env.NEXT_PUBLIC_STORE_ID ?? "",
+      channelKey: process.env.NEXT_PUBLIC_CHANNEL_KEY,
       paymentId,
       orderName: "AIAUTOTESTCASE",
       totalAmount: 30000,
