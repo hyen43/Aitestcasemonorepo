@@ -74,27 +74,29 @@
 
 ## 📈 단계적 확장 계획
 
-✅ 1단계 Figma Plugin MVP 출시 - 텍스트 선택 → 테스트 케이스 출력 기능
-⏳ 2단계 사용자 피드백 수집 및 리텐션 분석
-🔜 3단계 사용량이 증가할 경우, PG 결제 연동 기능 재활성화
-🔜 4단계 토큰 기반 유료 과금 모델 + 웹앱 정식 배포
+- 1단계 Figma Plugin MVP 출시 - 텍스트 선택 → 테스트 케이스 출력 기능
+- 2단계 사용자 피드백 수집 및 리텐션 분석
+- 3단계 사용량이 증가할 경우, PG 결제 연동 기능 재활성화
+- 4단계 토큰 기반 유료 과금 모델 + 웹앱 정식 배포
 
 ## 🛠 기술 스택
 
 - Frontend
-  Figma Plugin API
-  React, TypeScript
-  Firebase Hosting + Next.js (로그인/결제 대시보드)
+
+  - Figma Plugin API
+  - React, TypeScript
+  - Firebase Hosting + Next.js (로그인/결제 대시보드)
 
 - Backend
-  Node.js + Express
-  Firebase Admin SDK
-  PortOne PG 연동 API
+
+  - Node.js + Express
+  - Firebase Admin SDK
+  - PortOne PG 연동 API
 
 - Infra
-  Firebase Auth & Firestore
-  Turborepo 기반 모노레포 구성
-  Cypress (E2E 테스트 자동화)
+  - Firebase Auth & Firestore
+  - Turborepo 기반 모노레포 구성
+  - Cypress (E2E 테스트 자동화)
 
 ## 📁 디렉토리 구조 (모노레포 기준)
 
