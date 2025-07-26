@@ -15,7 +15,27 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (user) => {
+    //cypress 분기처리
+    const isCypress = typeof window !== "undefined" && (window as any).Cypress;
+    if (isCypress) {
+      const win = window as any;
+      const mockUser = win.Cypress?.mockUser || {
+        uid: "default_user",
+        email: "default@example.com",
+        credits: 0,
+      };
+
+      // ✅ credit 수에 따라 분기
+      if (mockUser.credits === 0) {
+        router.push("/payment");
+      } else {
+        router.push("/dashboard");
+      }
+
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         // Firestore에 사용자 프로필 저장
         await createUserProfile(user as User);
@@ -38,6 +58,7 @@ export default function Home() {
         }
       }
     });
+    return () => unsubscribe();
   }, [router]);
 
   const handleGoogleLogin = async () => {
@@ -62,6 +83,7 @@ export default function Home() {
         <button
           className="mt-10 px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150"
           onClick={handleGoogleLogin}
+          data-cy="google-login-btn"
         >
           <Image
             className="w-6 h-6 hover:cursor-pointer"

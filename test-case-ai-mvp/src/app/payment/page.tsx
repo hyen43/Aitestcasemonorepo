@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -15,6 +15,26 @@ export default function Payment() {
     status: "IDLE",
     message: "",
   });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).testTriggerPaymentComplete = async (
+        paymentId: string,
+        email: string
+      ) => {
+        const response = await fetch(
+          "http://localhost:4000/api/payment/complete",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId, email }),
+          }
+        );
+
+        return response.json();
+      };
+    }
+  }, []);
 
   // 결제 테스트 연동 로직
   // 결제용 랜덤 아이디 생성 함수
@@ -138,12 +158,14 @@ export default function Payment() {
           <button
             onClick={handlePaySubmit}
             className="border border-white text-white px-8 py-3 rounded-lg hover:bg-white hover:text-black transition-colors duration-200"
+            data-cy="payment-btn"
           >
             10,000원 결제하기
           </button>
           <button
             className="text-blue-600 hover:underline"
             onClick={handleLogout}
+            data-cy="logout-btn"
           >
             로그아웃
           </button>

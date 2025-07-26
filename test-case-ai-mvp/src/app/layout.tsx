@@ -8,7 +8,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="bg-black text-gray-800">{children}</body>
+      <body className="bg-black text-gray-800" cz-shortcut-listen="true">
+        {children}
+      </body>
     </html>
   );
 }

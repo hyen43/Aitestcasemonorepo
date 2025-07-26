@@ -76,6 +76,7 @@ export default function Dashboard() {
           <button
             className="text-blue-600 hover:underline"
             onClick={handleLogout}
+            data-cy="logout-btn"
           >
             로그아웃
           </button>
